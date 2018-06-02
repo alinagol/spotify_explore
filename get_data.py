@@ -3,6 +3,8 @@ import json
 import requests
 import json
 import base64
+import time
+
 
 # MongoDB
 
@@ -27,7 +29,8 @@ auth_req = requests.post('https://accounts.spotify.com/api/token', headers=heade
 
 headers = {
     'Authorization': 'Bearer ' + auth_req.json()['access_token'],
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Retry-After': '60'
 }
 
 s = requests.Session()
@@ -46,9 +49,16 @@ for artist in artist_ids:
                         headers=headers, params=payload).json()['tracks'])
 
 for track in tracks:
-    try:
+    tr = s.get('https://api.spotify.com/v1/audio-features/%s' % (track['id']), headers=headers)
+    if tr.status_code == 200:
+        tr = tr.json()
+        tr.update({'name': track['name'], 'popularity': track['popularity'], 'artist': track['artists'][0]['name']})
+        tracksDB.insert(tr)
+    elif tr.status_code == 429:
+        print('Sleeping...')
+        time.sleep(30)
         tr = s.get('https://api.spotify.com/v1/audio-features/%s' % (track['id']), headers=headers).json()
         tr.update({'name': track['name'], 'popularity': track['popularity'], 'artist': track['artists'][0]['name']})
         tracksDB.insert(tr)
-    except Exception as ex:
-        print('Error:', ex, type(ex))
+    else:
+        print(tr.status_code)
