@@ -38,7 +38,7 @@ s.headers.update(headers)
 
 # Insert
 
-artist_ids = json.load(open('artists.json'))
+artist_ids = list(set(json.load(open('artists.json'))))
 
 payload = {'country': 'NL'}
 
