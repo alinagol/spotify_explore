@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 from spotify_client import Spotify
 
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 WIKI_URL = (
@@ -18,6 +17,10 @@ WIKI_URL = (
 mongo_uri = f'mongodb://{os.getenv("MONGODB_USERNAME")}:{os.getenv("MONGODB_PASSWORD")}@{os.getenv("MONGODB_HOSTNAME")}:27017'
 with pymongo.MongoClient(mongo_uri) as client:
     db_tracks = client[os.getenv("MONGODB_DATABASE")]["tracks"]
+    db_tracks_no_id = client[os.getenv("MONGODB_DATABASE")]["tracks_no_id"]
+
+# Create an index on Spotify ID to avoid duplicates
+db_tracks.create_index([("id", pymongo.HASHED)], unique=True)
 
 spotify = Spotify(
     os.getenv("SPOTIFY_CLIENT_ID"), os.getenv("SPOTIFY_CLIENT_SECRET")
@@ -44,17 +47,15 @@ def get_top_charts():
                     }
                 except IndexError:
                     continue
-
                 try:
                     spotify_id = get_spotify_id(
                         track["title"], track["artist"]
                     )
-                    track.update({"spotify_id": spotify_id})
                     track.update(spotify.get_features(spotify_id))
+                    db_tracks.insert_one(track)
                 except (RequestException, KeyError, TypeError) as ex:
                     log.warning(ex)
-
-                db_tracks.insert_one(track)
+                    db_tracks_no_id.insert_one(track)
 
 
 def get_spotify_id(title: str, artist: str) -> str:
