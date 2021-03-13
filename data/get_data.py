@@ -20,7 +20,7 @@ with pymongo.MongoClient(mongo_uri) as client:
     db_tracks_no_id = client[os.getenv("MONGODB_DATABASE")]["tracks_no_id"]
 
 # Create an index on Spotify ID to avoid duplicates
-db_tracks.create_index([("id", pymongo.HASHED)], unique=True)
+db_tracks.create_index([("id", pymongo.TEXT)], unique=True, background=True)
 
 spotify = Spotify(
     os.getenv("SPOTIFY_CLIENT_ID"), os.getenv("SPOTIFY_CLIENT_SECRET")
