@@ -1,9 +1,8 @@
-version: "3.9"
+version: "3"
 services:
   data:
     build:
       context: ./data
-      dockerfile: Dockerfile
     environment:
       SPOTIFY_CLIENT_ID:
       SPOTIFY_CLIENT_SECRET:
@@ -17,20 +16,38 @@ services:
       - mongodb
   mongodb:
     image: mongo:4.2.2
-    restart: unless-stopped
+    restart: always
     command: mongod --auth
     ports:
       - '27017:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME:
       MONGO_INITDB_ROOT_PASSWORD:
-      MONGO_INITDB_DATABASE: spotify
+      MONGO_INITDB_DATABASE:
       MONGODB_DATA_DIR: /data/db
       MONDODB_LOG_DIR: /dev/null
     volumes:
       - mongodbdata:/data/db
     networks:
       - backend
+  web:
+    build:
+      context: ./web
+    environment:
+      MONGODB_DATABASE:
+      MONGODB_USERNAME:
+      MONGODB_PASSWORD:
+      MONGODB_HOSTNAME:
+    restart: always
+    expose:
+      - 5001
+    volumes:
+      - static_volume:/app/static
+    networks:
+      - backend
+    depends_on:
+      - mongodb
+      - data
 
 networks:
   backend:
@@ -38,4 +55,6 @@ networks:
 
 volumes:
   mongodbdata:
+    driver: local
+  static_volume:
     driver: local

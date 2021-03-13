@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    {% block head %}
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no"
+          name="viewport">
+
+    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" media="screen"
+          rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap-grid.css') }}" media="screen"
+          rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap-reboot.css') }}" media="screen"
+          rel="stylesheet">
+    <link href="{{ url_for('static', filename='js/bootstrap.js') }}" media="screen"
+          rel="stylesheet">
+    <link href="{{ url_for('static', filename='js/bootstrap.bundle.js') }}" media="screen"
+          rel="stylesheet">
+
+    <title>{% block title %}{% endblock %} Kotik </title>
+    {% endblock %}
+</head>
+
+<body>
+
+<header>
+    <nav class="navbar sticky-top navbar-dark bg-primary">
+        <a class="navbar-brand" href="/"> Kotik Ororo {% block navbar %}{%
+            endblock %}</a>
+        <div class="btn-group" role="group">
+            <form>
+                <input class="btn btn-light" onclick="window.location.reload();" type="button"
+                       value="Refresh">
+                <input class="btn btn-light" onclick="history.back()" type="button"
+                       value="Back">
+            </form>
+        </div>
+    </nav>
+</header>
+
+<main class="container">
+    <div class="starter-template clearfix">
+        <p class="lead">
+            {% block content %}{% endblock %}
+        </p>
+    </div>
+</main>
+
+<footer class="footer mt-auto py-3">
+    <div class="container">
+    </div>
+</footer>
+
+</body>
+</html>
